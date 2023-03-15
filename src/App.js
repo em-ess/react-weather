@@ -1,23 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
+import WeatherForm from './components/WeatherForm';
+import WeatherList from './components/WeatherList';
+import { useEffect, useState } from 'react';
+
+
 
 function App() {
+  const [latInput, setLatInput] = useState("");
+  const [longInput, setLongInput] = useState("");
+  const [weatherItems, setWeatherItems] = useState([]);
+
+  function handleLatChange(event) {
+    setLatInput(event.target.value);
+  }
+
+  function handleLongChange(event) {
+    setLongInput(event.target.value);
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    //Fetch open meteo API data
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latInput}&longitude=${longInput}&current_weather=true&hourly=temperature_2m`;
+
+    fetch(weatherUrl)
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      //Add a new item to weatherItems with lat, long, temp
+      const newItem = {
+        lat: latInput,
+        long: longInput,
+        temperature: data.current_weather.temperature
+      };
+
+      setWeatherItems([
+        ...weatherItems, newItem]);
+    });
+
+    setLatInput("");
+    setLongInput("");
+  }
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='h-screen w-full flex justify-center items-center'>
+      <div>
+        <WeatherForm latInput={latInput} longInput={longInput} handleLatChange={handleLatChange} handleLongChange={handleLongChange} handleSubmit={handleSubmit} />
+        <WeatherList items={weatherItems} />
+      </div>
     </div>
   );
 }
